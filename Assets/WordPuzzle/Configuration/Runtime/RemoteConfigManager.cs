@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Cysharp.Threading.Tasks;
 using Unity.Services.Authentication;
 using UnityEngine;
 using Unity.Services.Core;
 using Unity.Services.RemoteConfig;
+using Zenject;
 
 namespace WordPuzzle.Configuration
 {
@@ -21,6 +21,8 @@ namespace WordPuzzle.Configuration
 
         private async void Start()
         {
+            
+            
             int retryConnect = 5;
             var retryDelay = TimeSpan.FromSeconds(retry_time_seconds);
             while (retryConnect > 0 && !Utilities.CheckForInternetConnection())
@@ -88,6 +90,29 @@ namespace WordPuzzle.Configuration
         private void CacheConfigValues()
         {
             var wordLength = RemoteConfigService.Instance.appConfig.GetInt(ConfigKeys.WORD_LENGTH);
+            var puzzleDailyJson = RemoteConfigService.Instance.appConfig.GetJson(ConfigKeys.PUZZLE_DAILY);
+            var wordSetsJson = RemoteConfigService.Instance.appConfig.GetJson(ConfigKeys.PUZZLE_SETS);
+            
+            var puzzleManager = new PuzzleManager();
+            try
+            {
+                var puzzleDaily = JsonUtility.FromJson<Puzzle>(puzzleDailyJson);
+                if (puzzleDaily is {})
+                    puzzleManager.AddDailyPuzzle(puzzleDaily);
+
+                var wordSets = JsonUtility.FromJson<PuzzlesList>(wordSetsJson);
+                if (wordSets is {})
+                    puzzleManager.AddWordsSet(wordSets);
+            }
+            catch (Exception e)
+            {
+                Debug.LogException(e);
+            }
+
+            var container = new DiContainer();
+            
+            container.Bind<IPuzzleManager>().FromInstance(puzzleManager).AsSingle();
+
         }
     }
 }

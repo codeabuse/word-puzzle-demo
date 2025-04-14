@@ -1,14 +1,20 @@
-﻿namespace WordPuzzle.Runtime
+﻿using System.Collections.Generic;
+using Codeabuse;
+
+namespace WordPuzzle
 {
-    // for DI
-    
-    public interface IGameSettings
+    public interface IPuzzleManager
     {
-        public int WordLength { get; }
+        public IEnumerable<int> AvailablePuzzlesWordLength { get; }
+        public bool TryGetPuzzles(int wordLength, out IPuzzleCollection puzzleCollection);
+
+        public Puzzle GetDailyPuzzle();
     }
 
-    public interface IPuzzleProvider
+    public interface IPuzzleCollection
     {
-        // TODO: Get collection of puzzles from here
+        public void Add(Puzzle puzzle);
+        void AddRange(IEnumerable<Puzzle> puzzles);
+        Option<Puzzle> NextPuzzle();
     }
 }
