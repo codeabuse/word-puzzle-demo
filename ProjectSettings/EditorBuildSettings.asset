@@ -6,6 +6,12 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 8c9cfa26abfee488c85f1582747f6a02
+    path: Assets/WordPuzzle/Scenes/Startup.unity
+    guid: 8785d0fbc645e02408dbcabe4f5fc3ac
+  - enabled: 1
+    path: Assets/WordPuzzle/Scenes/Loading.unity
+    guid: 7f3fe0ef1aabfb840bbd69bc0c92f38f
+  - enabled: 1
+    path: Assets/WordPuzzle/Scenes/Gameplay.unity
+    guid: f122b529bf125df40a41a4583b2752a2
   m_configObjects: {}
