@@ -16,11 +16,6 @@ namespace WordPuzzle
         [Inject]
         private ILoadProgressHandler _loadProgressHandler;
 
-        private void Awake()
-        {
-            //ProjectContext.Instance.Container.
-        }
-
         [Inject]
         public void SetLoadingProgressHandler(ILoadProgressHandler loadProgressHandler)
         {
@@ -50,6 +45,11 @@ namespace WordPuzzle
                     await SceneManager.LoadSceneAsync(loadSceneOptions.Scene.Name, loadSceneOptions.LoadMode);
                 }
             }
+        }
+
+        public void LoadScenes()
+        {
+            Load().Forget();
         }
     }
 
