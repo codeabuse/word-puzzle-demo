@@ -288,7 +288,7 @@ GameObject:
   - component: {fileID: 1979937159}
   - component: {fileID: 1979937158}
   m_Layer: 0
-  m_Name: GameplaySceneLoader
+  m_Name: MenuSceneLoader
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -308,15 +308,15 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _loadSceneOptions:
   - _scene:
-      _guid: f122b529bf125df40a41a4583b2752a2
-      _name: Gameplay
-      _index: 2
+      _guid: 7f3fe0ef1aabfb840bbd69bc0c92f38f
+      _name: Menu
+      _index: 1
     _assetReference:
-      m_AssetGUID: f122b529bf125df40a41a4583b2752a2
+      m_AssetGUID: 7f3fe0ef1aabfb840bbd69bc0c92f38f
       m_SubObjectName: 
       m_SubObjectType: 
       m_EditorAssetChanged: 0
-    _loadMode: 1
+    _loadMode: 0
     _isAddressable: 1
 --- !u!4 &1979937159
 Transform:
