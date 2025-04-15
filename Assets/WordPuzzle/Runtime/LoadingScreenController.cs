@@ -8,7 +8,7 @@ using Zenject;
 
 namespace WordPuzzle
 {
-    public class LoadingScreenController : MonoInstaller, ILoadProgressHandler
+    public class LoadingScreenController : MonoBehaviour, ILoadProgressHandler
     {
         private CanvasGroup _rootCanvas;
         
@@ -64,10 +64,6 @@ namespace WordPuzzle
             _rootCanvas.alpha = 0;
             _rootCanvas.blocksRaycasts = false;
         }
-        // public override void InstallBindings()
-        // {
-        //     ProjectContext.Instance.Container.QueueForInject(this);
-        // }
 
         private void Awake()
         {
