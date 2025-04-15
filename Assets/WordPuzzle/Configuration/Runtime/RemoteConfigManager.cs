@@ -15,20 +15,30 @@ namespace WordPuzzle.Configuration
 
     public struct UserAttributes { }
 
-    public class RemoteConfigManager : MonoBehaviour
+    public class RemoteConfigManager : MonoBehaviour, IStartupProcedure
     {
+        [Inject]
+        private ILoadProgressHandler _loadingProgressHandler;
+        private bool _configFetchCompleted;
         private const int retry_time_seconds = 2;
+        private const int retry_attempts = 5;
 
-        private async void Start()
+        [Inject]
+        public void SetLoadingProgressHandler(ILoadProgressHandler loadProgressHandler)
         {
-            
-            
-            int retryConnect = 5;
+            _loadingProgressHandler = loadProgressHandler;
+        }
+
+        public async UniTask Load()
+        {
+            _loadingProgressHandler?.SetProgress(0f,"CONNECTING...");
+            int retryConnect = retry_attempts;
             var retryDelay = TimeSpan.FromSeconds(retry_time_seconds);
             while (retryConnect > 0 && !Utilities.CheckForInternetConnection())
             {
                 Debug.Log(
                         $"No internet connection available, retrying in {retry_time_seconds}s ({retryConnect} attempts remaining)");
+                _loadingProgressHandler?.SetProgress(0f,$"CONNECTING...(attempts remaining: {retryConnect})");
                 await UniTask.Delay(retryDelay);
                 --retryConnect;
             }
@@ -36,6 +46,7 @@ namespace WordPuzzle.Configuration
             if (!Utilities.CheckForInternetConnection())
             {
                 Debug.LogError("No internet connection available");
+                _loadingProgressHandler?.SetMessage("CHECK INTERNET CONNECTION");
                 return;
             }
 
@@ -59,10 +70,12 @@ namespace WordPuzzle.Configuration
             {
                     version = Application.version
             });
+            await UniTask.WaitUntil(() => _configFetchCompleted);
         }
 
         private async UniTask InitServices()
         {
+            _loadingProgressHandler?.SetProgress(.15F, "CHECKING FOR UPDATES...");
             await UnityServices.InitializeAsync();
 
             if (!AuthenticationService.Instance.IsAuthorized)
@@ -80,16 +93,19 @@ namespace WordPuzzle.Configuration
                 case ConfigOrigin.Cached:
                     break;
                 case ConfigOrigin.Remote:
+                    _loadingProgressHandler?.SetProgress(.35F, "UPDATING PUZZLES...");
                     CacheConfigValues();
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
+            _loadingProgressHandler?.SetProgress(1f, "READY!");
+            _loadingProgressHandler?.Hide(1f)
+                   .ContinueWith(() =>_configFetchCompleted = true);
         }
 
         private void CacheConfigValues()
         {
-            var wordLength = RemoteConfigService.Instance.appConfig.GetInt(ConfigKeys.WORD_LENGTH);
             var puzzleDailyJson = RemoteConfigService.Instance.appConfig.GetJson(ConfigKeys.PUZZLE_DAILY);
             var wordSetsJson = RemoteConfigService.Instance.appConfig.GetJson(ConfigKeys.PUZZLE_SETS);
             
@@ -97,8 +113,11 @@ namespace WordPuzzle.Configuration
             try
             {
                 var puzzleDaily = JsonUtility.FromJson<Puzzle>(puzzleDailyJson);
-                if (puzzleDaily is {})
+                if (puzzleDaily is { })
+                {
                     puzzleManager.AddDailyPuzzle(puzzleDaily);
+                    _loadingProgressHandler?.SetProgress(.5F, "UPDATING PUZZLES...");
+                }
 
                 var wordSets = JsonUtility.FromJson<PuzzlesList>(wordSetsJson);
                 if (wordSets is {})
@@ -109,10 +128,9 @@ namespace WordPuzzle.Configuration
                 Debug.LogException(e);
             }
 
-            var container = new DiContainer();
-            
-            container.Bind<IPuzzleManager>().FromInstance(puzzleManager).AsSingle();
-
+            var container = ProjectContext.Instance.Container;
+            container.Bind<IPuzzleManager>().To<PuzzleManager>().FromInstance(puzzleManager).AsSingle().NonLazy();
+            Debug.Log("PuzzleManager registered");
         }
     }
 }
