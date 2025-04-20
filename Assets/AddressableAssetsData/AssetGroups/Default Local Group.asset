@@ -1,0 +1,40 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bbb281ee3bf0b054c82ac2347e9e782c, type: 3}
+  m_Name: Default Local Group
+  m_EditorClassIdentifier: 
+  m_GroupName: Default Local Group
+  m_Data:
+    m_SerializedData: []
+  m_GUID: 69a694da47d72bf439e0916d5ef573d4
+  m_SerializeEntries:
+  - m_GUID: 7f3fe0ef1aabfb840bbd69bc0c92f38f
+    m_Address: Assets/WordPuzzle/Scenes/Menu.unity
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: 8785d0fbc645e02408dbcabe4f5fc3ac
+    m_Address: Assets/WordPuzzle/Scenes/Startup.unity
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  - m_GUID: f122b529bf125df40a41a4583b2752a2
+    m_Address: Assets/WordPuzzle/Scenes/Gameplay.unity
+    m_ReadOnly: 0
+    m_SerializedLabels: []
+    FlaggedDuringContentUpdateRestriction: 0
+  m_ReadOnly: 0
+  m_Settings: {fileID: 11400000, guid: 6ccc100a732f1b64b9752f3fc673f8bb, type: 2}
+  m_SchemaSet:
+    m_Schemas:
+    - {fileID: 11400000, guid: 5d2651f8c4fa26640ae093038bae2907, type: 2}
+    - {fileID: 11400000, guid: 5bd8d7a36307c4640ad4c60d073c60a1, type: 2}
