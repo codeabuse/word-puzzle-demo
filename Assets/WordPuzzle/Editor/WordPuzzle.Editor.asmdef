@@ -1,0 +1,21 @@
+{
+    "name": "WordPuzzle.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:e0b9daec303086d4298d255471e537ed",
+        "GUID:593a5b492d29ac6448b1ebf7f035ef33",
+        "GUID:84651a3751eca9349aac36a66bba901b",
+        "GUID:04948dbd58dce014281c3991f48bef0c"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
