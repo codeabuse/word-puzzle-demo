@@ -10,18 +10,13 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 225bdf66a2304e499b0f392aee24b130, type: 3}
-  m_Name: Default Puzzle Collection
+  m_Name: Tutorial Puzzle
   m_EditorClassIdentifier: 
   _puzzles:
-  - _wordLength: 6
-    _words:
-    - bridge
-    - stream
-    - quarry
-    - banana
-  - _wordLength: 6
-    _words:
-    - riddle
-    - poison
-    - squash
-    - basket
+    puzzles:
+    - word_length: 6
+      words:
+      - crater
+      - bridge
+      - dragon
+      - saturn
