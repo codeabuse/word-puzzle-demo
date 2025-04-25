@@ -80,7 +80,7 @@ namespace WordPuzzle
             while (puzzles.NextPuzzle() is { HasValue: true } puzzleOption)
             {
                 var puzzle = puzzleOption.Value;
-                Initialize(puzzle.WordLength, puzzle.Words.Length);
+                Initialize(puzzle.WordLength, puzzle.Words.Count);
                 var clusters = _wordCutter.Cut(puzzle.Words);
                 StartGame(puzzle.Words, clusters, ct);
                 await _onWordsMatch.OnInvokeAsync(ct);
@@ -100,7 +100,7 @@ namespace WordPuzzle
             _popUpMenu.Show(GameState.PuzzleCollectionSolved);
         }
 
-        private void StartGame(string[] words, string[] clusters, CancellationToken ct)
+        private void StartGame(IReadOnlyList<string> words, string[] clusters, CancellationToken ct)
         {
             _goalWords.Clear();
             _goalWords.UnionWith(words);
