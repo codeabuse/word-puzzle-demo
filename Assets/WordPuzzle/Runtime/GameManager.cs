@@ -1,7 +1,6 @@
 ﻿using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.UI;
 using Zenject;
 
 namespace WordPuzzle
@@ -18,9 +17,6 @@ namespace WordPuzzle
 
         [Inject]
         private IPuzzleManager _puzzleManager;
-
-
-        private Button _quitButton;
 
         private IPuzzleCollection _puzzleCollection;
 
@@ -43,9 +39,15 @@ namespace WordPuzzle
             SetWordLength(default_word_length);
 
             var tutorialPlayed = PlayerPrefs.GetInt(PlayerKeys.TUTORIAL_PLAYED, 0) != 0;
-            if (_tutorialPuzzles && !tutorialPlayed)
+
+            var playingTutorial = _tutorialPuzzles && !tutorialPlayed;
+            var puzzles = playingTutorial ? _tutorialPuzzles : _puzzleCollection;
+            _playTask = _gameBoard.Play(puzzles, linkedCancellation.Token);
+            
+            if (playingTutorial)
             {
-                _playTask = _gameBoard.Play(_tutorialPuzzles, linkedCancellation.Token);
+                _playTask.ContinueWith(() =>
+                        PlayerPrefs.SetInt(PlayerKeys.TUTORIAL_PLAYED, 1));
             }
         }
 
