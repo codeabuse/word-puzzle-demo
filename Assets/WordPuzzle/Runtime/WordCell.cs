@@ -1,20 +1,26 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Codeabuse;
 using Codeabuse.Pooling;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Events;
 using WordPuzzle.UI;
 using Zenject;
 
 namespace WordPuzzle
 {
-    public class WordCell : MonoBehaviour, IDockArea
+    public class WordCell : MonoBehaviour, IDockArea, IPooledBehavior
     {
+        [SerializeField]
+        private UnityEvent _onWordCellFilled = new();
+        
+        
         private readonly List<LetterCell> _cells = new();
         private readonly Dictionary<LettersCluster, int> _dockedClusters = new();
-        private readonly StringBuilder _stringBuilder = new();
         
+        [Inject]
         private PrefabPool<LetterCell> _letterCellsPool;
         
         private int _lastFrameHighlight;
@@ -24,6 +30,11 @@ namespace WordPuzzle
         
         private float _cellWidth;
         private readonly Vector3[] _worldCorners = new Vector3[4];
+
+        public UnityEvent OnWordCellFilled => _onWordCellFilled;
+        public bool IsFilled => _cells.All(x => x.IsFilled);
+
+        private static StringBuilder _wordReader = new();
 
         private void Awake()
         {
@@ -47,18 +58,16 @@ namespace WordPuzzle
 
         private void CalculateCellWidth()
         {
-            _cellWidth = _rectTransform.rect.size[0] / _cells.Count;
+            _cellWidth = _rectTransform.rect.size[0] * _rectTransform.lossyScale[0] / _cells.Count;
         }
 
-        public Option<string> Read(StringBuilder stringBuilder)
+        public void Read(StringBuilder stringBuilder)
         {
             stringBuilder.Clear();
             foreach (var cell in _cells)
             {
                 stringBuilder.Append(cell.Character);
             }
-
-            return stringBuilder.ToString();
         }
 
         [Inject]
@@ -69,7 +78,7 @@ namespace WordPuzzle
 
         public void SetLength(int length)
         {
-            ClearCells();
+            ReleaseCells();
             for (var i = 0; i < length; i++)
             {
                 var cell = _letterCellsPool.Get();
@@ -81,10 +90,11 @@ namespace WordPuzzle
             UniTask.DelayFrame(1).ContinueWith(CalculateCellWidth);
         }
 
-        public void ClearCells()
+        public void ReleaseCells()
         {
             foreach (var letterCell in _cells)
             {
+                letterCell.Clear();
                 _letterCellsPool.Release(letterCell);
             }
             _cells.Clear();
@@ -94,7 +104,7 @@ namespace WordPuzzle
         {
             if (dockable is not LettersCluster cluster)
                 return Option<int>.None;
-            
+
             var relativeLetterPosition = cluster.Letters[0].transform.position.x - _worldCorners[0].x;
             
             var start = (int)(relativeLetterPosition / _cellWidth);
@@ -141,8 +151,16 @@ namespace WordPuzzle
 
             _dockedClusters[cluster] = start;
             cluster.transform.SetParent(_cells[start].transform);
+            cluster.transform.localScale = transform.localScale;
             cluster.OnDocked(this);
-            Debug.Log(Read(_stringBuilder).Value);
+            
+            Read(_wordReader);
+            Debug.Log(_wordReader.ToString());
+
+            if (_cells.All(x => x.IsFilled))
+            {
+                _onWordCellFilled.Invoke();
+            }
         }
 
         public void Undock(IDockable dockable)
@@ -156,11 +174,24 @@ namespace WordPuzzle
             _dockedClusters.Remove(cluster);
             for (var i = position; i < position + cluster.Size; i++)
             {
-                _cells[i].Remove();
+                _cells[i].Clear();
             }
+            
+            Read(_wordReader);
+            Debug.Log(_wordReader.ToString());
             dockable.transform.SetParent(transform.root);
             dockable.OnUndocked(this);
-            Debug.Log(Read(_stringBuilder).Value);
+        }
+
+        public void OnGet()
+        {
+            
+        }
+
+        public void OnRelease()
+        {
+            _onWordCellFilled.RemoveAllListeners();
+            ReleaseCells();
         }
     }
 }

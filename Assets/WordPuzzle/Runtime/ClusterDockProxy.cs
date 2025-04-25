@@ -24,9 +24,9 @@ namespace WordPuzzle
             _clustersDockArea.Borrow(dockable);
         }
 
-        public void Return(IDockable dockable)
+        public void ReturnBorrowed(IDockable dockable)
         {
-            _clustersDockArea.Return(dockable);
+            _clustersDockArea.ReturnBorrowed(dockable);
         }
 
         public Option<int> GetItemPosition(IDockable dockable)

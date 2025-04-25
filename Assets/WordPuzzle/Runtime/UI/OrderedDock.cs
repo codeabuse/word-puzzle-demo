@@ -59,11 +59,15 @@ namespace WordPuzzle.UI
 
         public void DockAt(IDockable dockable, int position)
         {
+            if (dockable is { } && dockable.Equals(_borrowedItem))
+            {
+                ReturnBorrowed(dockable);
+                return;
+            }
             dockable.transform.SetParent(_dockAreaTransform);
             dockable.transform.SetSiblingIndex(position);
             _dockedItems.Insert(position, dockable);
             dockable.OnDocked(this);
-            Debug.Log($"{dockable.name} was docked at position {position}");
             this.OnDocked(dockable);
         }
 
@@ -74,7 +78,6 @@ namespace WordPuzzle.UI
                 Debug.LogError($"Trying to borrow {dockable.name} from {name}, but it is not docked.");
                 return;
             }
-            Debug.Log($"Borrowed {dockable.name}");
             _borrowedItem = dockable;
             var index = dockable.transform.GetSiblingIndex();
             var size = dockable.RectTransform.rect.size[(int)_axis];
@@ -87,7 +90,7 @@ namespace WordPuzzle.UI
             this.OnBorrowed(dockable);
         }
 
-        public void Return(IDockable dockable)
+        public void ReturnBorrowed(IDockable dockable)
         {
             if (dockable is { } && dockable.Equals(_borrowedItem))
             {
@@ -107,7 +110,6 @@ namespace WordPuzzle.UI
         {
             if (!_dockedItems.Contains(dockable))
             {
-                Debug.LogError($"Trying to undock {dockable.name} from {name}, but it is not docked.");
                 return;
             }
 

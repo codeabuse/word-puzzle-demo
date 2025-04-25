@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Codeabuse.Pooling;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -34,12 +33,9 @@ namespace WordPuzzle
         public IReadOnlyList<Letter> Letters => _letters;
         public int Size => _letters.Count;
 
-        public Vector2 GetAnchor()
-        {
-            return _letters.FirstOrDefault()?.transform.position ?? default;
-        }
 
         public RectTransform RectTransform { get; private set; }
+        public bool IsDocked => _dockedTo is { };
 
         private void Awake()
         {
@@ -52,11 +48,6 @@ namespace WordPuzzle
         private void Construct(GraphicRaycaster graphicRaycaster, PrefabPool<Letter> lettersPool)
         {
             _graphicRaycaster = graphicRaycaster;
-            _lettersPool = lettersPool;
-        }
-
-        public void Initialize(PrefabPool<Letter> lettersPool)
-        {
             _lettersPool = lettersPool;
         }
 
@@ -74,7 +65,7 @@ namespace WordPuzzle
                 {
                     var letter = _lettersPool.Get();
                     letter.AssignCluster(this);
-                    letter.transform.parent = transform;
+                    letter.transform.SetParent(transform);
                     _letters.Add(letter);
                 }
             }
@@ -106,8 +97,10 @@ namespace WordPuzzle
             foreach (var letter in _letters)
             {
                 _lettersPool.Release(letter);
+                letter.transform.localScale = Vector3.one;
             }
             _letters.Clear();
+            transform.localScale = Vector3.one;
         }
 
         public void OnBeginDrag(PointerEventData eventData)
@@ -128,12 +121,8 @@ namespace WordPuzzle
 
         public void OnDrag(PointerEventData eventData)
         {
-            // perform drag
             transform.position = eventData.position - _dragOffset;
-            if (_letters.Count == 0)
-                return;
             
-            // find drop slot
             if (OverlapsDockArea(out var dockArea) && dockArea.CanDock(this))
             {
                 _dockTarget = dockArea;
@@ -146,17 +135,13 @@ namespace WordPuzzle
 
         public void OnEndDrag(PointerEventData eventData)
         {
-            // check new dock target
+            // find dock target
             if (_dockTarget is {} && _dockTarget.CanDock(this))
             {
                 _dockedTo?.Undock(this);
                 _dockTarget.Dock(this);
             }
             // if none, return to old dock
-            else if (_dockedTo is IOrderedDockArea orderedDockArea)
-            {
-                orderedDockArea.Return(this);
-            }
             else
             {
                 _homeDock?.Dock(this);

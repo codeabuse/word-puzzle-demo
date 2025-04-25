@@ -16,7 +16,7 @@ namespace WordPuzzle.UI
         new Option<int> CanDock(IDockable dockable);
         void DockAt(IDockable dockable, int position);
         void Borrow(IDockable dockable);
-        void Return(IDockable dockable);
+        void ReturnBorrowed(IDockable dockable);
         Option<int> GetItemPosition(IDockable dockable);
     }
 
@@ -25,6 +25,7 @@ namespace WordPuzzle.UI
         string name { get; }
         Transform transform { get; }
         RectTransform RectTransform { get; }
+        bool IsDocked { get; }
         void SetHomeDock(IDockArea home);
         void OnDocked(IDockArea dockArea);
         void OnUndocked(IDockArea dockArea);

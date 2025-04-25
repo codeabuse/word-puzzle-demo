@@ -32,7 +32,7 @@ namespace WordPuzzle
             _letter = letter;
         }
 
-        public Letter Remove()
+        public Letter Clear()
         {
             if (!_letter)
                 return null;

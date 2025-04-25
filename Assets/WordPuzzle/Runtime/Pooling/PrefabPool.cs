@@ -7,13 +7,15 @@ namespace Codeabuse.Pooling
 {
     public class PrefabPool<T> where T: Object
     {
-        public PrefabPool(T prefab, Transform storageRoot, int spawnAmount) 
-                : this(prefab, storageRoot)
+        public delegate T CreateObject(T prefab, Transform parent);
+        
+        public PrefabPool(T prefab, Transform storageRoot, int spawnAmount, CreateObject factory = null) 
+                : this(prefab, storageRoot, factory)
         {
             SpawnAmount = spawnAmount;
         }
         
-        public PrefabPool(T prefab, Transform storageRoot)
+        public PrefabPool(T prefab, Transform storageRoot, CreateObject factory = null)
         {
             if (!(typeof(T).IsSubclassOf(typeof(Component)) ||
                   (_isGameObject = typeof(T) == typeof(GameObject))))
@@ -23,15 +25,18 @@ namespace Codeabuse.Pooling
             }
             _prefab = prefab;
             _storageRoot = storageRoot;
+            _factory = factory ?? Object.Instantiate;
         }
 
-        private bool _isGameObject;
+        private readonly bool _isGameObject;
 
         private int _spawnAmount = 5;
         
         private readonly Stack<T> _instances = new();
         private readonly Transform _storageRoot;
         private readonly T _prefab;
+
+        private readonly CreateObject _factory;
 
         public bool ActivateOnGet
         {
@@ -70,7 +75,7 @@ namespace Codeabuse.Pooling
         {
             for (var i = 0; i < count; i++)
             {
-                var instance = Object.Instantiate(_prefab, _storageRoot);
+                var instance = _factory(_prefab, _storageRoot);
                 ActivateGameObject(instance, false);
                 _instances.Push(instance);
                 OnCreate?.Invoke(instance);

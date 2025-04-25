@@ -8,26 +8,24 @@ namespace WordPuzzle
 {
     public class GameManager : MonoBehaviour
     {
+        private const int default_word_length = 6;
+        
         [SerializeField]
         private GameBoard _gameBoard;
-
-        [Inject]
-        private IPuzzleManager _puzzleManager;
-
-        private CancellationTokenSource _gameCancellation = new();
-
-        private Button _quitButton;
-
-        private IPuzzleCollection _puzzleCollection;
 
         [SerializeField]
         private PuzzleSet _tutorialPuzzles;
 
         [Inject]
-        public void SetPuzzleManager(IPuzzleManager puzzleManager)
-        {
-            _puzzleManager = puzzleManager;
-        }
+        private IPuzzleManager _puzzleManager;
+
+
+        private Button _quitButton;
+
+        private IPuzzleCollection _puzzleCollection;
+
+        private UniTask _playTask;
+        private CancellationTokenSource _gameCancellation = new();
 
         private void Start()
         {
@@ -41,18 +39,42 @@ namespace WordPuzzle
                     CancellationTokenSource.CreateLinkedTokenSource(
                             _gameCancellation.Token,
                             this.GetCancellationTokenOnDestroy());
+            
+            SetWordLength(default_word_length);
 
             var tutorialPlayed = PlayerPrefs.GetInt(PlayerKeys.TUTORIAL_PLAYED, 0) != 0;
             if (_tutorialPuzzles && !tutorialPlayed)
-                _gameBoard.Play(_tutorialPuzzles);
+            {
+                _playTask = _gameBoard.Play(_tutorialPuzzles, linkedCancellation.Token);
+            }
         }
 
-        public void SetWordLength(int wordLength)
+        private void SetWordLength(int wordLength)
         {
             if (_puzzleManager.TryGetPuzzles(wordLength, out var puzzleCollection))
             {
                 _puzzleCollection = puzzleCollection;
             }
+        }
+
+        public void Play()
+        {
+            var linkedCancellation =
+                    CancellationTokenSource.CreateLinkedTokenSource(
+                            _gameCancellation.Token,
+                            this.GetCancellationTokenOnDestroy());
+
+            _playTask = PlayLoop(linkedCancellation.Token);
+        }
+
+        private async UniTask PlayLoop(CancellationToken ct)
+        {
+            await _gameBoard.Play(_puzzleCollection, ct);
+        }
+
+        public void ResetTutorial()
+        {
+            PlayerPrefs.SetInt(PlayerKeys.TUTORIAL_PLAYED, 0);
         }
     }
 

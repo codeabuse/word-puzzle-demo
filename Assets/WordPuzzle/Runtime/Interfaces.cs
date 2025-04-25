@@ -1,9 +1,16 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using Codeabuse;
 using Cysharp.Threading.Tasks;
+using UnityEngine;
 
 namespace WordPuzzle
 {
+    public interface IWordCutter
+    {
+        string[] Cut(IEnumerable<string> words);
+    }
+
     public interface ILoadProgressHandler
     {
         void Show();
@@ -11,7 +18,7 @@ namespace WordPuzzle
         void SetMessage(string message);
         UniTask Hide(float fadeOutSeconds = 0f);
     }
-    
+
     public interface IPuzzleManager
     {
         public IEnumerable<int> AvailablePuzzlesWordLength { get; }
@@ -25,5 +32,13 @@ namespace WordPuzzle
         public void Add(Puzzle puzzle);
         void AddRange(IEnumerable<Puzzle> puzzles);
         Option<Puzzle> NextPuzzle();
+    }
+
+    public interface IPopUpMenu
+    {
+        Transform SolvedPuzzleDisplayRoot { get; }
+        void Show(GameState state);
+        UniTask WaitContinueCommand(CancellationToken ct);
+        UniTask WaitBackToMenuCommand(CancellationToken ct);
     }
 }

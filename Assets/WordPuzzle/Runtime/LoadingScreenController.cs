@@ -52,15 +52,14 @@ namespace WordPuzzle
                        .OnComplete(SetHide)
                        .ToUniTask();
             }
-            else
-            {
-                SetHide();
-            }
+            
+            SetHide();
             return UniTask.CompletedTask;
         }
 
         private void SetHide()
         {
+            _message.text = "";
             _rootCanvas.alpha = 0;
             _rootCanvas.blocksRaycasts = false;
         }

@@ -22,7 +22,7 @@ namespace WordPuzzle
             _loadProgressHandler = loadProgressHandler;
         }
 
-        public async UniTask Load()
+        async UniTask IStartupProcedure.Load()
         {
             var counter = 0;
             foreach (var loadSceneOptions in _loadSceneOptions)
@@ -47,9 +47,9 @@ namespace WordPuzzle
             }
         }
 
-        public void LoadScenes()
+        public void Load()
         {
-            Load().Forget();
+            ((IStartupProcedure)this).Load().Forget();
         }
     }
 
