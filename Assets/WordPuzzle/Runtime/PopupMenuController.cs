@@ -15,6 +15,8 @@ namespace WordPuzzle
         private string _puzzleSolvedText = "PUZZLE SOLVED!";
         [SerializeField]
         private string _pauseText = "Pause";
+        [SerializeField]
+        private string _continueText = "Continue";
         
         [SerializeField]
         private TMP_Text _title;
@@ -58,7 +60,9 @@ namespace WordPuzzle
             {
                 case GameState.Playing:
                     _message.text = _pauseText;
+                    _continueButtonText.text = _continueText;
                     _continueButtonText.gameObject.SetActive(true);
+                    _continueButton.OnClickAsync().ContinueWith(() => Show(false));
                     break;
                 case GameState.PuzzleSolved:
                     _message.text = _puzzleSolvedText;
