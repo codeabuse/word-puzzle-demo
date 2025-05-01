@@ -24,20 +24,23 @@ namespace WordPuzzle
         public IEnumerable<int> AvailablePuzzlesWordLength { get; }
         public bool TryGetPuzzles(int wordLength, out IPuzzleCollection puzzleCollection);
 
-        public Puzzle GetDailyPuzzle();
+        public Puzzle GetTutorial();
     }
 
     public interface IPuzzleCollection
     {
+        int PuzzlesRemainig { get; }
+        int Count { get; }
         public void Add(Puzzle puzzle);
         void AddRange(IEnumerable<Puzzle> puzzles);
         Option<Puzzle> NextPuzzle();
+        void ResetProgress();
     }
 
     public interface IPopUpMenu
     {
         Transform SolvedPuzzleDisplayRoot { get; }
-        void Show(GameState state);
+        UniTask Show(GameState state, CancellationToken cancellationToken = default);
         UniTask WaitContinueCommand(CancellationToken ct);
         UniTask WaitBackToMenuCommand(CancellationToken ct);
     }

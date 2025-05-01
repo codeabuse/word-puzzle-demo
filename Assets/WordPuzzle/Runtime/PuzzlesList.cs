@@ -11,8 +11,11 @@ namespace WordPuzzle
         [SerializeField]
         private List<Puzzle> puzzles = new();
 
-        private int _nextPuzzleIndex = -1;
-        
+        private int _nextPuzzleIndex = 0;
+
+        public int PuzzlesRemainig => puzzles.Count - _nextPuzzleIndex;
+        public int Count => puzzles.Count;
+
         public void Add(Puzzle puzzle)
         {
             puzzles.Add(puzzle);
@@ -32,8 +35,17 @@ namespace WordPuzzle
         {
             if (puzzles.Count == 0)
                 return null;
-            _nextPuzzleIndex = (++_nextPuzzleIndex) % puzzles.Count;
-            return puzzles[_nextPuzzleIndex];
+            if (_nextPuzzleIndex >= puzzles.Count)
+            {
+                return Option<Puzzle>.None;
+            }
+            
+            return puzzles[_nextPuzzleIndex++];
+        }
+
+        public void ResetProgress()
+        {
+            _nextPuzzleIndex = 0;
         }
 
         public IEnumerator<Puzzle> GetEnumerator() => puzzles.GetEnumerator();
