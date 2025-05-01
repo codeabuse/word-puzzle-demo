@@ -1,6 +1,7 @@
 ﻿using System.Threading;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Serialization;
 using Zenject;
 
 namespace WordPuzzle
@@ -12,13 +13,16 @@ namespace WordPuzzle
         [SerializeField]
         private GameBoard _gameBoard;
 
+        [FormerlySerializedAs("_tutorialPuzzles")]
         [SerializeField]
-        private PuzzleSet _tutorialPuzzles;
+        private PuzzleSet _builtInPuzzles;
 
         [Inject]
         private IPuzzleManager _puzzleManager;
+        [Inject]
+        private IPopUpMenu _popUpMenu;
 
-        private IPuzzleCollection _puzzleCollection;
+        private IPuzzleCollection _selectedPuzzleCollection;
 
         private UniTask _playTask;
         private CancellationTokenSource _gameCancellation = new();
@@ -36,52 +40,52 @@ namespace WordPuzzle
                             _gameCancellation.Token,
                             this.GetCancellationTokenOnDestroy());
             
-            SetWordLength(default_word_length);
+            var wordLength = PlayerPrefs.GetInt(PlayerKeys.WORD_LENGTH, default_word_length);
+
+            if (!_puzzleManager.TryGetPuzzles(wordLength, out var puzzleCollection))
+            {
+                Debug.LogError($"No puzzles with word length {wordLength}");
+                return;
+            }
+            
+            _selectedPuzzleCollection = puzzleCollection;
+            _selectedPuzzleCollection.ResetProgress();
 
             var tutorialPlayed = PlayerPrefs.GetInt(PlayerKeys.TUTORIAL_PLAYED, 0) != 0;
 
-            var playingTutorial = _tutorialPuzzles && !tutorialPlayed;
-            var puzzles = playingTutorial ? _tutorialPuzzles : _puzzleCollection;
-            _playTask = _gameBoard.Play(puzzles, linkedCancellation.Token);
+            _builtInPuzzles.ResetProgress();
             
-            if (playingTutorial)
+            if (!tutorialPlayed)
             {
-                _playTask.ContinueWith(() =>
-                        PlayerPrefs.SetInt(PlayerKeys.TUTORIAL_PLAYED, 1));
+                var tutorialPuzzle = _puzzleManager.GetTutorial() ?? _builtInPuzzles.NextPuzzle().Value;
+                _playTask = _gameBoard.Play(tutorialPuzzle, true, linkedCancellation.Token)
+                       .ContinueWith(() =>
+                                PlayerPrefs.SetInt(PlayerKeys.TUTORIAL_PLAYED, 1));
             }
+
+            _playTask = _playTask.ContinueWith(() => Play(_selectedPuzzleCollection, linkedCancellation.Token));
         }
 
-        private void SetWordLength(int wordLength)
+        private async UniTask Play(IPuzzleCollection puzzles, CancellationToken ct)
         {
-            if (_puzzleManager.TryGetPuzzles(wordLength, out var puzzleCollection))
+            while (puzzles.NextPuzzle() is { HasValue: true } puzzleOption)
             {
-                _puzzleCollection = puzzleCollection;
+                var showEndGameScreen = puzzles.PuzzlesRemainig > 0;
+                await _gameBoard.Play(puzzleOption.Value, showEndGameScreen, ct);
             }
+            
+            _popUpMenu.Show(GameState.PuzzleCollectionSolved, ct);
         }
 
-        public void Play()
+        private void OnDestroy()
         {
-            var linkedCancellation =
-                    CancellationTokenSource.CreateLinkedTokenSource(
-                            _gameCancellation.Token,
-                            this.GetCancellationTokenOnDestroy());
-
-            _playTask = PlayLoop(linkedCancellation.Token);
-        }
-
-        private async UniTask PlayLoop(CancellationToken ct)
-        {
-            await _gameBoard.Play(_puzzleCollection, ct);
-        }
-
-        public void ResetTutorial()
-        {
-            PlayerPrefs.SetInt(PlayerKeys.TUTORIAL_PLAYED, 0);
+            _gameCancellation.Cancel(false);
         }
     }
 
     public static class PlayerKeys
     {
         public const string TUTORIAL_PLAYED = "tutorial_played";
+        public const string WORD_LENGTH = "word_length";
     }
 }

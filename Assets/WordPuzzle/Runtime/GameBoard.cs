@@ -55,6 +55,7 @@ namespace WordPuzzle
         private void RegisterWordsScale()
         {
             var scale = _wordsRoot.transform.lossyScale[0];
+            ProjectContext.Instance.Container.UnbindId<float>(WORDS_SCALE);
             ProjectContext.Instance.Container
                    .BindInstance(scale)
                    .WithId(WORDS_SCALE);
@@ -72,42 +73,60 @@ namespace WordPuzzle
                 _wordCells.Add(wordCell);
                 wordCell.transform.SetParent(_wordsRoot);
             }
-            Debug.Log($"cells scale is {_wordCells[0].transform.lossyScale}");
         }
 
-        public async UniTask Play(IPuzzleCollection puzzles, CancellationToken ct)
+        public async UniTask Play(Puzzle puzzle, bool showEndGameScreen, CancellationToken ct)
         {
-            while (puzzles.NextPuzzle() is { HasValue: true } puzzleOption)
+            Initialize(puzzle.WordLength, puzzle.Words.Count);
+            var cuts = _wordCutter.Cut(puzzle.Words);
+            StartGame(puzzle.Words, cuts);
+            
+            await _onWordsMatch.OnInvokeAsync(ct);
+            
+
+            if (!showEndGameScreen)
+                return;
+            
+            _wordsRoot.SetParent(_popUpMenu.SolvedPuzzleDisplayRoot);
+            EnableClusters(false);
+            await _popUpMenu.Show(GameState.PuzzleSolved, ct).ContinueWith(()=>
             {
-                var puzzle = puzzleOption.Value;
-                Initialize(puzzle.WordLength, puzzle.Words.Count);
-                var clusters = _wordCutter.Cut(puzzle.Words);
-                StartGame(puzzle.Words, clusters, ct);
-                await _onWordsMatch.OnInvokeAsync(ct);
-                _popUpMenu.Show(GameState.PuzzleSolved);
-                _wordsRoot.SetParent(_popUpMenu.SolvedPuzzleDisplayRoot);
-                foreach (var lettersCluster in _clusters)
-                {
-                    lettersCluster.enabled = false;
-                }
-                await _popUpMenu.WaitContinueCommand(ct);
+                if (!this)
+                    return;
                 _wordsRoot.SetParent(_wordsRootParent);
-                foreach (var lettersCluster in _clusters)
-                {
-                    lettersCluster.enabled = true;
-                }
-            }
-            _popUpMenu.Show(GameState.PuzzleCollectionSolved);
+                EnableClusters(true);
+            });
         }
 
-        private void StartGame(IReadOnlyList<string> words, string[] clusters, CancellationToken ct)
+        private void EnableClusters(bool value)
         {
+            foreach (var lettersCluster in _clusters)
+            {
+                lettersCluster.enabled = value;
+            }
+        }
+
+        private void OnDestroy()
+        {
+            if (_wordsRoot)
+                Destroy(_wordsRoot.gameObject);
+        }
+
+        private void StartGame(IReadOnlyList<string> words, string[] cuts)
+        {
+            _stringBuilder.AppendJoin(", ", words);
+            Debug.Log($"Game started: {_stringBuilder.ToString()}");
+            
+            _stringBuilder.Clear();
             _goalWords.Clear();
             _goalWords.UnionWith(words);
-            Shuffle(clusters, clusters.Length * 2);
-            PopulateClusters(clusters);
+            
+            Shuffle(cuts, cuts.Length * 2);
+            PopulateClusters(cuts);
+            
             foreach (var wordCell in _wordCells)
             {
+                wordCell.OnWordCellFilled.RemoveListener(OnWordFilled);
                 wordCell.OnWordCellFilled.AddListener(OnWordFilled);
             }
         }
