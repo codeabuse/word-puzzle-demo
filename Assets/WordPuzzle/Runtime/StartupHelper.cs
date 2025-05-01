@@ -24,8 +24,6 @@ namespace WordPuzzle
 
     public interface IStartupProcedure
     {
-        [Inject]
-        void SetLoadingProgressHandler(ILoadProgressHandler loadProgressHandler);
         UniTask Load();
     }
 }
