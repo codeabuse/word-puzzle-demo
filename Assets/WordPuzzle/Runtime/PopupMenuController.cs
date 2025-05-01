@@ -17,6 +17,8 @@ namespace WordPuzzle
         private string _pauseText = "Pause";
         [SerializeField]
         private string _continueText = "Continue";
+        [SerializeField]
+        private string _nextPuzzleText = "Next puzzle";
         
         [SerializeField]
         private TMP_Text _title;
@@ -37,23 +39,21 @@ namespace WordPuzzle
 
         private TMP_Text _continueButtonText;
 
-
         public Transform SolvedPuzzleDisplayRoot => _solvedPuzzleDisplayRoot;
 
         private void Awake()
         {
             _continueButtonText = _continueButton.GetComponentInChildren<TMP_Text>();
+            _backToMenuButton.onClick.AddListener(_menuSceneLoader.Load);
         }
 
         private void Start()
         {
-            _backToMenuButton.onClick.AddListener(_menuSceneLoader.Load);
-            _backToMenuButton.onClick.AddListener(()=> Show(false));
-            _continueButton.onClick.AddListener(()=> Show(false));
-            Show(false);
+            gameObject.SetActive(false);
         }
 
-        public void Show(GameState state)
+        
+        public UniTask Show(GameState state, CancellationToken cancellationToken)
         {
             _continueButton.onClick.RemoveAllListeners();
             switch (state)
@@ -61,39 +61,48 @@ namespace WordPuzzle
                 case GameState.Playing:
                     _message.text = _pauseText;
                     _continueButtonText.text = _continueText;
+                    _continueButton.gameObject.SetActive(true);
                     _continueButtonText.gameObject.SetActive(true);
-                    _continueButton.OnClickAsync().ContinueWith(() => Show(false));
                     break;
                 case GameState.PuzzleSolved:
                     _message.text = _puzzleSolvedText;
-                    _continueButtonText.text = "NEXT PUZZLE";
+                    _continueButtonText.text = _nextPuzzleText;
+                    _continueButton.gameObject.SetActive(true);
                     _continueButtonText.gameObject.SetActive(true);
-                    _continueButton.OnClickAsync().ContinueWith(() => Show(false));
                     break;
                 case GameState.PuzzleCollectionSolved:
                     _message.text = _allPuzzlesSolvedText;
-                    _continueButtonText.gameObject.SetActive(false);
-                    _continueButton.OnClickAsync().ContinueWith(() => Show(false));
+                    _continueButton.gameObject.SetActive(false);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(state), state, null);
             }
-            Show(true);
+            
+            _continueButton.onClick.AddListener(() => gameObject.SetActive(false));
+            gameObject.SetActive(true);
+            
+            return UniTask.WhenAny(
+                    _continueButton.OnClickAsync(cancellationToken),
+                    _backToMenuButton.OnClickAsync(cancellationToken));
         }
 
+        /// <summary>
+        /// Do not call before <see cref="Show"/> method since button events are removed.
+        /// </summary>
+        /// <returns></returns>
         public UniTask WaitContinueCommand(CancellationToken ct)
         {
             return _continueButton.OnClickAsync(ct);
         }
 
+        
+        /// <summary>
+        /// Do not call before <see cref="Show"/> method since button events are removed.
+        /// </summary>
+        /// <returns></returns>
         public UniTask WaitBackToMenuCommand(CancellationToken ct)
         {
             return _backToMenuButton.OnClickAsync(ct);
-        }
-
-        private void Show(bool value)
-        {
-            gameObject.SetActive(value);
         }
     }
 }
