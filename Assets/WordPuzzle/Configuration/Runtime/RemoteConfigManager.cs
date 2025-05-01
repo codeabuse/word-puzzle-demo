@@ -106,22 +106,22 @@ namespace WordPuzzle.Configuration
 
         private void CacheConfigValues()
         {
-            var puzzleDailyJson = RemoteConfigService.Instance.appConfig.GetJson(ConfigKeys.PUZZLE_DAILY);
-            var wordSetsJson = RemoteConfigService.Instance.appConfig.GetJson(ConfigKeys.PUZZLE_SETS);
+            var puzzleTutorialJson = RemoteConfigService.Instance.appConfig.GetJson(ConfigKeys.PUZZLE_TUTORIAL);
+            var puzzleSampleJson = RemoteConfigService.Instance.appConfig.GetJson(ConfigKeys.PUZZLE_SAMPLE);
             
             var puzzleManager = new PuzzleManager();
             try
             {
-                var puzzleDaily = JsonUtility.FromJson<Puzzle>(puzzleDailyJson);
-                if (puzzleDaily is { })
+                var puzzleTutorial = JsonUtility.FromJson<Puzzle>(puzzleTutorialJson);
+                if (puzzleTutorial is { })
                 {
-                    puzzleManager.AddDailyPuzzle(puzzleDaily);
+                    puzzleManager.AddDailyPuzzle(puzzleTutorial);
                     _loadingProgressHandler?.SetProgress(.5F, "UPDATING PUZZLES...");
                 }
 
-                var wordSets = JsonUtility.FromJson<PuzzlesList>(wordSetsJson);
-                if (wordSets is {})
-                    puzzleManager.AddWordsSet(wordSets);
+                var puzzleSample = JsonUtility.FromJson<PuzzlesList>(puzzleSampleJson);
+                if (puzzleSample is {})
+                    puzzleManager.AddPuzzles(puzzleSample);
             }
             catch (Exception e)
             {

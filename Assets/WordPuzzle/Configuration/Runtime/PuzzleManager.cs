@@ -7,7 +7,7 @@ namespace WordPuzzle.Configuration
         private readonly Dictionary<int, PuzzlesList> _puzzles = new();
         private Puzzle _dailyPuzzle;
 
-        public void AddWordsSet(PuzzlesList puzzles)
+        public void AddPuzzles(PuzzlesList puzzles)
         {
             foreach (var puzzle in puzzles)
             {
@@ -35,7 +35,7 @@ namespace WordPuzzle.Configuration
             return result;
         }
 
-        public Puzzle GetDailyPuzzle()
+        public Puzzle GetTutorial()
         {
             return _dailyPuzzle;
         }
