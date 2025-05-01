@@ -64,8 +64,8 @@ namespace WordPuzzle
                 for (var i = 0; i < count; i++)
                 {
                     var letter = _lettersPool.Get();
-                    letter.AssignCluster(this);
                     letter.transform.SetParent(transform);
+                    letter.transform.localScale = Vector3.one;
                     _letters.Add(letter);
                 }
             }

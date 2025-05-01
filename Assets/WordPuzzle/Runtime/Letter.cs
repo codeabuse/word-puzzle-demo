@@ -1,7 +1,6 @@
 ﻿using Codeabuse.Pooling;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
 namespace WordPuzzle
@@ -15,7 +14,6 @@ namespace WordPuzzle
 
         private char _character;
         
-        private LettersCluster _cluster;
         [SerializeField]
         private Image _image;
         public char Character => _character;
@@ -31,12 +29,6 @@ namespace WordPuzzle
             if (_text.text.Length > 0)
                 _character = _text.text[0];
         }
-
-        public void AssignCluster(LettersCluster cluster)
-        {
-            _cluster = cluster;
-        }
-
         public void OnGet()
         {
             
@@ -45,15 +37,6 @@ namespace WordPuzzle
         public void OnRelease()
         {
             _character = default;
-            _cluster = null;
-        }
-
-        public void OnBeginDrag(PointerEventData eventData)
-        {
-            if (!_cluster)
-                return;
-
-            _cluster.OnBeginDrag(eventData);
         }
     }
 }
