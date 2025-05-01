@@ -14,36 +14,23 @@ namespace WordPuzzle
         private LoadSceneOptions[] _loadSceneOptions;
         
         [Inject]
-        private ILoadProgressHandler _loadProgressHandler;
-
-        [Inject]
-        public void SetLoadingProgressHandler(ILoadProgressHandler loadProgressHandler)
-        {
-            _loadProgressHandler = loadProgressHandler;
-        }
+        private ILoadProgressHandler _loadingProgressHandler;
 
         async UniTask IStartupProcedure.Load()
         {
             var counter = 0;
-            foreach (var loadSceneOptions in _loadSceneOptions)
+            foreach (var loadSceneOption in _loadSceneOptions)
             {
-                if (string.IsNullOrEmpty(loadSceneOptions.Scene.Name))
+                if (( loadSceneOption.IsAddressable && loadSceneOption.AssetReference is null) ||string.IsNullOrEmpty(loadSceneOption.Scene.Name))
                 {
                     Debug.LogWarning("Scene loader has no scene to load!", this);
                     return;
                 }
 
-                _loadProgressHandler?.Show();
-                _loadProgressHandler?.SetProgress((float)++counter / _loadSceneOptions.Length, $"LOADING {loadSceneOptions.Scene.Name}");
-                if (loadSceneOptions.IsAddressable)
-                {
-                    await Addressables.LoadSceneAsync(loadSceneOptions.AssetReference.RuntimeKey, loadSceneOptions.LoadMode, true)
-                           .ToUniTask();
-                }
-                else
-                {
-                    await SceneManager.LoadSceneAsync(loadSceneOptions.Scene.Name, loadSceneOptions.LoadMode);
-                }
+                _loadingProgressHandler?.Show();
+                _loadingProgressHandler?.SetProgress((float)++counter / _loadSceneOptions.Length, $"LOADING {loadSceneOption.Scene.Name}");
+                
+                await loadSceneOption.LoadAsync();
             }
         }
 
@@ -76,5 +63,16 @@ namespace WordPuzzle
         public bool IsAddressable => _isAddressable;
 
         public AssetReference AssetReference => _assetReference;
+
+        public UniTask LoadAsync()
+        {
+            if (_isAddressable)
+            {
+                return Addressables.LoadSceneAsync(_assetReference.RuntimeKey, _loadMode, true)
+                       .ToUniTask();
+            }
+            
+            return SceneManager.LoadSceneAsync(_scene.Name, _loadMode).ToUniTask();
+        }
     }
 }
