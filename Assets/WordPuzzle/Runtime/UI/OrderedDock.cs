@@ -120,8 +120,8 @@ namespace WordPuzzle.UI
             }
             
             _dockedItems.Remove(dockable);
-            dockable.OnUndocked(this);
             this.OnUndocked(dockable);
+            dockable.OnUndocked(this);
         }
 
         public Option<int> GetItemPosition(IDockable dockable)
