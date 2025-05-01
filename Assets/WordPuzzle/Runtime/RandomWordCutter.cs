@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Pool;
 using Random = UnityEngine.Random;
@@ -9,7 +8,7 @@ namespace WordPuzzle
     public class RandomWordCutter : IWordCutter
     {
         private const int max_failed_cuts = 10;
-        private const int MIN_CUT = 1;
+        private const int MIN_CUT = 2;
         private const int MAX_CUT = 4;
         
         public int MinCut { get; set; } = MIN_CUT;
@@ -22,46 +21,38 @@ namespace WordPuzzle
             var currentlyCut = ListPool<char>.Get();
             foreach (var word in words)
             {
-                currentlyCut.AddRange(word);
-                while (currentlyCut.Count > 0)
-                {
-                    var cutSize = GetCutSize(MinCut, MaxCut, currentlyCut.Count);
-                    cuts.Add(new string(currentlyCut.GetRange(0, cutSize).ToArray()));
-                    currentlyCut.RemoveRange(0, cutSize);
-                }
+                Cut(word, MinCut, MaxCut, cuts);
             }
             ListPool<char>.Release(currentlyCut);
             return cuts.ToArray();
         }
 
-        private int GetCutSize(int min, int max, int currentLength)
+        private void Cut(string word, int minCut, int maxCut, List<string> cuts)
         {
-            var maxCut = Mathf.Min(max, currentLength);
-            var cut = Random.Range(min, maxCut + 1);
-            var remainingLength = currentLength - cut;
-            if (remainingLength == 0 || remainingLength >= min)
-                return cut;
+            var cuttingBoard = ListPool<char>.Get();
+            cuttingBoard.AddRange(word);
             
-            do
+            while (cuttingBoard.Count > 0)
             {
-                cut = GetCutSize(min, remainingLength, currentLength);
-                remainingLength = currentLength - cut;
-                
-            } while (remainingLength < min);
-
-            return cut;
-        }
-    }
-    
-
-    internal class ImpossibleWordCutException : Exception
-    {
-        public override string Message { get; }
-
-        public ImpossibleWordCutException(string word, string partToCut, int minCut, int maxCut)
-        {
-            this.Message = $"Impossible to cut the word's '{word}' remaining part: '{partToCut}' with settings: " +
-                           $"MinCut {minCut}, MaxCut: {maxCut}";
+                var cutSize = Random.Range(minCut, Mathf.Min(maxCut, cuttingBoard.Count) + 1);
+                var remainingLength = cuttingBoard.Count - cutSize;
+                if (remainingLength < minCut)
+                {
+                    cutSize = minCut;
+                    remainingLength = cuttingBoard.Count - cutSize;
+                    while (remainingLength > 0 && remainingLength < minCut && cutSize < maxCut)
+                    {
+                        cutSize++;
+                        remainingLength = cuttingBoard.Count - cutSize;
+                        if (remainingLength == 0 || remainingLength >= minCut)
+                            break;
+                    }
+                }
+                cuts.Add(new string(cuttingBoard.GetRange(0, cutSize).ToArray()));
+                cuttingBoard.RemoveRange(0, cutSize);
+            }
+            
+            ListPool<char>.Release(cuttingBoard);
         }
     }
 }
