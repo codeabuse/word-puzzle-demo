@@ -67,9 +67,7 @@ namespace WordPuzzle.UI
             var currentScale = transform.localScale[axisIndex];
 
             var scale = GetTargetScaleToFit(_self, _parent, _referenceAxis);
-            Debug.Log($"Parent size: {_parent.rect.size[axisIndex]}, self size: {_self.rect.size[axisIndex]}");
-            Debug.Log($"{_referenceAxis} target scale: {scale}");
-                    
+
             if (Mathf.Abs(currentScale - scale) < presicision)
                 return;
             
@@ -79,8 +77,8 @@ namespace WordPuzzle.UI
             var fitOrthogonalSide = _parent.rect.size[otherAxisIndex];
             if (orthogonalSideScaled > fitOrthogonalSide)
             {
-                Debug.Log($"Other axis scale: {scale}");
-                scale = fitOrthogonalSide / orthogonalSide;
+                var scaleFactor = fitOrthogonalSide / orthogonalSideScaled;
+                scale *= scaleFactor;
             }
 
             _self.localScale = Vector3.one * scale;
