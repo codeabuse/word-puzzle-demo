@@ -17,12 +17,6 @@ namespace WordPuzzle.UI
         [SerializeField]
         private RectTransform.Axis _referenceAxis;
 
-        protected override void Awake()
-        {
-            base.Awake();
-            
-        }
-
         protected override void Start()
         {
             base.Start();
@@ -59,29 +53,41 @@ namespace WordPuzzle.UI
         [ContextMenu(nameof(AdjustScale))]
         private void AdjustScale()
         {
-            
             if (!_parent)
                 return;
             
             var axisIndex = (int)_referenceAxis;
             var currentScale = transform.localScale[axisIndex];
 
-            var scale = GetTargetScaleToFit(_self, _parent, _referenceAxis);
+            var proposedScale = GetTargetScaleToFit(_self, _parent, _referenceAxis);
+            if (float.IsInfinity(proposedScale))
+                return;
 
-            if (Mathf.Abs(currentScale - scale) < presicision)
+            var selfRect = _self.rect;
+            var parentRect = _parent.rect;
+            
+            var orthogonalAxisIndex = (axisIndex + 1) % 2;
+            var orthogonalSide = selfRect.size[orthogonalAxisIndex];
+            var orthogonalSideScaled = orthogonalSide * proposedScale;
+            var parentOrthogonalSide = parentRect.size[orthogonalAxisIndex];
+            if (orthogonalSideScaled > parentOrthogonalSide)
+            {
+                var orthogonalSideCorrection = parentOrthogonalSide / orthogonalSideScaled;
+                
+                if (float.IsInfinity(orthogonalSideCorrection))
+                    return;
+                
+                proposedScale *= orthogonalSideCorrection;
+            }
+            
+            if (Mathf.Abs(currentScale - proposedScale) < presicision)
                 return;
             
-            var otherAxisIndex = (axisIndex + 1) % 2;
-            var orthogonalSide = _self.rect.size[otherAxisIndex];
-            var orthogonalSideScaled = orthogonalSide * scale;
-            var fitOrthogonalSide = _parent.rect.size[otherAxisIndex];
-            if (orthogonalSideScaled > fitOrthogonalSide)
-            {
-                var scaleFactor = fitOrthogonalSide / orthogonalSideScaled;
-                scale *= scaleFactor;
-            }
+            if (_self.root == false)
+                Debug.LogError($"Attempt to modify local scale of rootless transform!", this);
+            
 
-            _self.localScale = Vector3.one * scale;
+            _self.localScale = Vector3.one * proposedScale;
         }
 
         private static float GetTargetScaleToFit(RectTransform target, RectTransform fitInto, RectTransform.Axis axis)
