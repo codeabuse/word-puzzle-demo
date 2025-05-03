@@ -83,6 +83,7 @@ namespace WordPuzzle
             {
                 var cell = _letterCellsPool.Get();
                 cell.transform.SetParent(transform);
+                cell.transform.localScale = Vector3.one;
                 
                 // WordCell uses reversed order in layout group to avoid hiding attached clusters
                 _cells.Insert(0, cell);
