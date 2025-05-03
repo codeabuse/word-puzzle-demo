@@ -226,11 +226,4 @@ namespace WordPuzzle
             return result;
         }
     }
-
-    public enum GameState
-    {
-        Playing,
-        PuzzleSolved,
-        PuzzleCollectionSolved
-    }
 }
