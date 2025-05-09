@@ -361,7 +361,7 @@
       "dependencies": {
         "com.unity.inputsystem": "1.7.0"
       },
-      "hash": "8bee4c03fb7b220a2ecb632ca0960a9aa6152e04"
+      "hash": "f80f3ec8c28363aeb0ec92007543787d21dade67"
     },
     "com.unity.modules.ai": {
       "version": "1.0.0",
