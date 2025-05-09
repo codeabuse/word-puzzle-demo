@@ -55,7 +55,6 @@ namespace WordPuzzle
         
         public UniTask Show(GameState state, CancellationToken cancellationToken)
         {
-            _continueButton.onClick.RemoveAllListeners();
             switch (state)
             {
                 case GameState.Playing:
@@ -78,12 +77,18 @@ namespace WordPuzzle
                     throw new ArgumentOutOfRangeException(nameof(state), state, null);
             }
             
-            _continueButton.onClick.AddListener(() => gameObject.SetActive(false));
+            _continueButton.onClick.AddListener(Hide);
             gameObject.SetActive(true);
             
             return UniTask.WhenAny(
                     _continueButton.OnClickAsync(cancellationToken),
                     _backToMenuButton.OnClickAsync(cancellationToken));
+        }
+
+        private void Hide()
+        {
+            gameObject.SetActive(false);
+            _continueButton.onClick.RemoveAllListeners();
         }
 
         /// <summary>
