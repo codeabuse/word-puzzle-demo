@@ -1,7 +1,7 @@
 ﻿using Codeabuse.Pooling;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
+using WordPuzzle.Signals;
 using Zenject;
 
 namespace WordPuzzle
@@ -10,6 +10,8 @@ namespace WordPuzzle
     {
         [SerializeField]
         private GraphicRaycaster _graphicRaycaster;
+        [SerializeField]
+        private ClustersDockArea _clustersDockArea;
         [SerializeField]
         private Letter _letterPrefab;
         [SerializeField]
@@ -20,7 +22,6 @@ namespace WordPuzzle
         [SerializeField]
         private LettersCluster _lettersClusterPrefab;
         
-        [FormerlySerializedAs("_lettersPoolRoot")]
         [SerializeField]
         private Transform _commonPoolRoot;
 
@@ -64,6 +65,9 @@ namespace WordPuzzle
                    .AsSingle()
                    .NonLazy();
 
+            SignalBusInstaller.Install(Container);
+            Container.DeclareSignal<WordsRootScaleChangedSignal>();
+            Container.BindInterfacesTo<ClustersDockArea>().FromInstance(_clustersDockArea).AsSingle();
         }
     }
 }

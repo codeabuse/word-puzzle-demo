@@ -5,6 +5,7 @@ using Codeabuse.Pooling;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
+using WordPuzzle.Signals;
 using Zenject;
 using Random = UnityEngine.Random;
 
@@ -40,6 +41,9 @@ namespace WordPuzzle
         
         [Inject]
         private IPopUpMenu _popUpMenu;
+        
+        [Inject]
+        private SignalBus _signalBus;
 
         private void Awake()
         {
@@ -47,19 +51,11 @@ namespace WordPuzzle
             _wordsRootParent = _wordsRoot.parent;
         }
 
-        private void Start()
-        {
-            UniTask.DelayFrame(1).ContinueWith(RegisterWordsScale);
-        }
-
-        private void RegisterWordsScale()
+        private void EmitWordsScaleChangedSignal()
         {
             var scale = _wordsRoot.transform.lossyScale[0];
-            ProjectContext.Instance.Container.UnbindId<float>(WORDS_SCALE);
-            ProjectContext.Instance.Container
-                   .BindInstance(scale)
-                   .WithId(WORDS_SCALE);
-            Debug.Log($"Words Scale: {scale}");
+            var signal = new WordsRootScaleChangedSignal(scale);
+            _signalBus.Fire(signal);
         }
 
         public void Initialize(int wordLength, int wordsCount)
@@ -72,7 +68,9 @@ namespace WordPuzzle
                 wordCell.SetLength(wordLength);
                 _wordCells.Add(wordCell);
                 wordCell.transform.SetParent(_wordsRoot);
-            }
+            }    
+            
+            UniTask.DelayFrame(1).ContinueWith(EmitWordsScaleChangedSignal);
         }
 
         public async UniTask Play(Puzzle puzzle, bool showEndGameScreen, CancellationToken ct)

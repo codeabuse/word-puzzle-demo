@@ -1,12 +1,13 @@
 ﻿using Cysharp.Threading.Tasks;
 using DG.Tweening;
 using UnityEngine;
+using WordPuzzle.Signals;
 using WordPuzzle.UI;
 using Zenject;
 
 namespace WordPuzzle
 {
-    public class ClustersDockArea : OrderedDock
+    public class ClustersDockArea : OrderedDock, IInitializable
     {
         [SerializeField]
         private float _scaleDuration = .25f;
@@ -16,20 +17,25 @@ namespace WordPuzzle
 
         private float _undockedClusterScale = 1f;
 
+        [Inject]
+        private SignalBus _signalBus;
+
+        public void Initialize()
+        {
+            _signalBus.Subscribe<WordsRootScaleChangedSignal>(OnWordsRootScaleChanged);
+        }
+
         private void Start()
         {
             foreach (var dockable in GetComponentsInChildren<IDockable>())
             {
                 dockable.SetHomeDock(this);
             }
-            
-            UniTask.DelayFrame(2).ContinueWith(UpdateUndockedClustersScale);
         }
 
-        private void UpdateUndockedClustersScale()
+        private void OnWordsRootScaleChanged(WordsRootScaleChangedSignal signal)
         {
-            _undockedClusterScale = (float)ProjectContext.Instance.Container
-                   .Resolve(new BindingId() { Identifier = GameBoard.WORDS_SCALE, Type = typeof(float) });
+            _undockedClusterScale = signal.Scale;
         }
 
         protected override void OnDocked(IDockable dockable)
