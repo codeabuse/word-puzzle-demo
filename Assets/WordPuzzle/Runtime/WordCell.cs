@@ -34,7 +34,8 @@ namespace WordPuzzle
         public UnityEvent OnWordCellFilled => _onWordCellFilled;
         public bool IsFilled => _cells.All(x => x.IsFilled);
 
-        private static StringBuilder _wordReader = new();
+        // uncomment for debug/logging
+        //private static StringBuilder _wordReader = new();
 
         private void Awake()
         {
@@ -155,8 +156,8 @@ namespace WordPuzzle
             cluster.transform.localScale = transform.localScale;
             cluster.OnDocked(this);
             
-            Read(_wordReader);
-            Debug.Log(_wordReader.ToString());
+            // Read(_wordReader);
+            // Debug.Log(_wordReader.ToString());
 
             if (_cells.All(x => x.IsFilled))
             {
@@ -178,8 +179,8 @@ namespace WordPuzzle
                 _cells[i].Clear();
             }
             
-            Read(_wordReader);
-            Debug.Log(_wordReader.ToString());
+            // Read(_wordReader);
+            // Debug.Log(_wordReader.ToString());
             dockable.transform.SetParent(transform.root);
             dockable.OnUndocked(this);
         }
