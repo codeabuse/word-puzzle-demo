@@ -1,7 +1,6 @@
 ﻿using Codeabuse;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using Zenject;
 
 namespace WordPuzzle
 {
@@ -13,8 +12,9 @@ namespace WordPuzzle
         
         private async void Start()
         {
-            foreach (IStartupProcedure startupProcedure in _startupProcedures)
+            foreach (var component in _startupProcedures)
             {
+                var startupProcedure = (IStartupProcedure)component;
                 if (startupProcedure is null)
                     continue;
                 await startupProcedure.Load();
