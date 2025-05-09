@@ -21,7 +21,7 @@ namespace WordPuzzle
 
     public interface IPuzzleManager
     {
-        public IEnumerable<int> AvailablePuzzlesWordLength { get; }
+        public IReadOnlyList<int> AvailablePuzzlesWordLength { get; }
         public bool TryGetPuzzles(int wordLength, out IPuzzleCollection puzzleCollection);
 
         public Puzzle GetTutorial();
