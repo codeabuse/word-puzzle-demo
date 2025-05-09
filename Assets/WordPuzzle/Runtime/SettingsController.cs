@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using Zenject;
@@ -33,6 +34,10 @@ namespace WordPuzzle
             
             UnityEngine.Pool.ListPool<TMP_Dropdown.OptionData>.Release(options);
             _wordsLengthDropdown.onValueChanged.AddListener(WordLengthChanged);
+
+            var lastPlayedWordLength = PlayerPrefs.GetInt(PlayerKeys.WORD_LENGTH, availableWordsLengths.First());
+
+            _wordsLengthDropdown.value = _lengths.First(kvp => kvp.Value == lastPlayedWordLength).Key;
         }
 
         private void WordLengthChanged(int index)
