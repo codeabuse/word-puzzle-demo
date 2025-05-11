@@ -1,6 +1,12 @@
 # Word Puzzle Demo
 
-<img src="gameplay1.png" alt="Game screenshot" style="width:300px; display: block; margin-left: auto; margin-right: auto;" />
+<p align="center">
+<img src="gameplay1.png" alt="Game screenshot" width="300" />
+</p>
+
+
+[//]: # (Image References)
+[gameplay]: gameplay1.png "This is a tree"
 
 This demo provides an example of a game that uses Unity Gaming Services. 
 In this game player reconstructs 4 words out of given letter clusters 
