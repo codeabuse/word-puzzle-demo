@@ -15,11 +15,11 @@ namespace WordPuzzle.UI
         private RectTransform _parent;
 
         [SerializeField]
+        [Tooltip("Axis by which the object's RectTransform will be scaled to fit parent's axis. Scale is unitform.")]
         private RectTransform.Axis _referenceAxis;
 
-        protected override void Start()
+        protected override void Awake()
         {
-            base.Start();
             _self = GetComponent<RectTransform>();
             _parent = _self.parent as RectTransform;
         }
