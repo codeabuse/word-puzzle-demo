@@ -84,6 +84,8 @@ gameplay loop. Injections: `IPuzzleManager`, `IPopUpMenu`.
 - `GameBoard`: creates game board and shows the end game screen when the puzzle 
 is solved. Injections: `IWordCutter`, `IPopUpMenu`.
 - `SettingsController`: maintains Settings menu. Injections: `IPuzzleManager`.
+- `ProjectInstaller`: composition root of the project, binds `ILoadProgressHandler` 
+and `IPopUpMenu` to their implementations.
 - `GameplaySceneInstaller`: composition root of the `Gameplay` scene, defines 
 most of the project dependencies (prefab pools, signals etc).
 - `RemoteConfigManager`: retrieves the remote configuration for the game and 
@@ -91,7 +93,8 @@ creates `PuzzleManager`. Injections: `ILoadProgressHandler`.
 - `WordCell`, `LetterCell`, `Letter`, `LettersCluster`, `ClustersDockArea`: 
 main gameplay elements.
 - `SceneLoader`: simplifies the scene loading configuration and completely 
-- remove scenes manipulation from other classes.
+- remove scenes manipulation from other classes. Implements `IStartupProcedure` 
+interface.
 
 ### Important Prefabs
 
