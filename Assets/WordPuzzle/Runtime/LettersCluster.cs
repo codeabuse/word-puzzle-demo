@@ -18,6 +18,8 @@ namespace WordPuzzle
     {
         [SerializeField]
         private List<Letter> _letters = new();
+        [SerializeField]
+        private Graphic _targetGraphic;
         
         private Vector2 _dragOffset;
         private PrefabPool<Letter> _lettersPool;
@@ -29,6 +31,7 @@ namespace WordPuzzle
         private IDockArea _dockedTo;
         private IDockArea _dockTarget;
         private IDockArea _homeDock;
+        private bool _draggingDockContainer;
 
         public IReadOnlyList<Letter> Letters => _letters;
         public int Size => _letters.Count;
@@ -105,6 +108,18 @@ namespace WordPuzzle
 
         public void OnBeginDrag(PointerEventData eventData)
         {
+            var delta = eventData.delta;
+            if (_dockedTo == _homeDock &&
+                _homeDock is Component dockComponent && 
+                Mathf.Abs(delta.x) > Mathf.Abs(delta.y))
+            {
+                _targetGraphic.raycastTarget = false;
+                _draggingDockContainer = true;
+                // pass-through the drag event
+                // SendMessageUpwards would lead to infinite cycle and hangs the game
+                dockComponent.SendMessage("OnBeginDrag", eventData);
+                return;
+            }
             switch (_dockedTo)
             {
                 case IOrderedDockArea orderedDockArea:
@@ -115,12 +130,16 @@ namespace WordPuzzle
                     break;
             }
             
-            // save offset
             _dragOffset = eventData.position - (Vector2)transform.position;
         }
 
         public void OnDrag(PointerEventData eventData)
         {
+            if (_draggingDockContainer && _homeDock is Component dockComponent)
+            {
+                dockComponent.SendMessage("OnDrag", eventData);
+                return;
+            }
             transform.position = eventData.position - _dragOffset;
             
             if (OverlapsDockArea(out var dockArea) && dockArea.CanDock(this))
@@ -135,13 +154,20 @@ namespace WordPuzzle
 
         public void OnEndDrag(PointerEventData eventData)
         {
+            if (_draggingDockContainer && _homeDock is Component dockComponent)
+            {
+                dockComponent.SendMessage("OnEndDrag", eventData);
+                _draggingDockContainer = false;
+                _targetGraphic.raycastTarget = true;
+                return;
+            }
             // find dock target
             if (_dockTarget is {} && _dockTarget.CanDock(this))
             {
                 _dockedTo?.Undock(this);
                 _dockTarget.Dock(this);
             }
-            // if none, return to old dock
+            // if none, return to home dock
             else
             {
                 _homeDock?.Dock(this);

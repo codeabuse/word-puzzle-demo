@@ -79,6 +79,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _letters: []
+  _targetGraphic: {fileID: 5773355711641238168}
 --- !u!222 &6487130700179809845
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -114,7 +115,7 @@ GameObject:
   - component: {fileID: 5773355711641238168}
   - component: {fileID: 749035236988236575}
   m_Layer: 5
-  m_Name: Border
+  m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
