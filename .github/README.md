@@ -1,1 +1,1 @@
-Assets/Documentation~/Readme.md
+../Assets/Documentation~/Readme.md
