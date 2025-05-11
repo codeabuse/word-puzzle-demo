@@ -4,10 +4,6 @@
 <img src="gameplay1.png" alt="Game screenshot" width="300" />
 </p>
 
-
-[//]: # (Image References)
-[gameplay]: gameplay1.png "This is a tree"
-
 This demo provides an example of a game that uses Unity Gaming Services. 
 In this game player reconstructs 4 words out of given letter clusters 
 (2-4 letters long), words order on game board doesn't matter.
